@@ -1,5 +1,48 @@
 import Link from "next/link";
-import { getToolsByCategory, getCategoryById } from "@/lib/tools";
+import type { Metadata } from "next";
+import { getToolsByCategory, getCategoryById, categories } from "@/lib/tools";
+
+export async function generateStaticParams() {
+  return categories.map((cat) => ({ category: cat.id }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { category: string };
+}): Promise<Metadata> {
+  const category = getCategoryById(params.category as "pdf" | "image" | "audio");
+
+  if (!category) {
+    return {
+      title: "الصفحة غير موجودة | أدواتي",
+      description: "عذراً، الصفحة التي تبحث عنها غير موجودة.",
+    };
+  }
+
+  const title = `${category.nameAr} | أدواتي - Adwati`;
+  const description = `${category.descriptionAr} — جميع المعالجات تتم في متصفحك مباشرة بأمان كامل وبدون رفع للملفات.`;
+  const url = `https://adwati.com/tools/${params.category}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      locale: "ar_SA",
+      type: "website",
+      siteName: "أدواتي - Adwati",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default function CategoryPage({
   params,

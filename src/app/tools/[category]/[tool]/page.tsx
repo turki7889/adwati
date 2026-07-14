@@ -1,7 +1,53 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getToolById, getCategoryById } from "@/lib/tools";
+import type { Metadata } from "next";
+import { getToolById, getCategoryById, tools as allTools } from "@/lib/tools";
 import dynamic from "next/dynamic";
+
+export async function generateStaticParams() {
+  return allTools.map((tool) => ({
+    category: tool.category,
+    tool: tool.id,
+  }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { category: string; tool: string };
+}): Promise<Metadata> {
+  const tool = getToolById(params.tool);
+
+  if (!tool) {
+    return {
+      title: "الأداة غير موجودة | أدواتي",
+      description: "عذراً، الأداة التي تبحث عنها غير موجودة.",
+    };
+  }
+
+  const title = `${tool.nameAr} | أدواتي - Adwati`;
+  const description = `${tool.descriptionAr} — أداة مجانية تعمل بالكامل في متصفحك بدون رفع للملفات.`;
+  const url = `https://adwati.com${tool.route}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      locale: "ar_SA",
+      type: "website",
+      siteName: "أدواتي - Adwati",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 // Map tool IDs to their components
 const toolComponents: Record<string, React.ComponentType> = {

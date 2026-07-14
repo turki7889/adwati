@@ -1,5 +1,28 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { categories, tools, popularToolIds } from "@/lib/tools";
+
+export const metadata: Metadata = {
+  title: "أدواتي - Adwati | أدوات ويب عربية مجانية وآمنة",
+  description:
+    "أدواتي - منصة الأدوات العربية المجانية. معالجة PDF، تحرير الصور، تحويل الصوتيات وغيرها الكثير. جميع المعالجات تتم في المتصفح بأمان كامل — بدون رفع للملفات.",
+  alternates: { canonical: "https://adwati.com" },
+  openGraph: {
+    title: "أدواتي - Adwati | أدوات ويب عربية مجانية وآمنة",
+    description:
+      "منصة الأدوات العربية المجانية — معالجة PDF، تحرير الصور، تحويل الصوتيات. كل المعالجات في متصفحك بدون رفع للملفات.",
+    url: "https://adwati.com",
+    locale: "ar_SA",
+    type: "website",
+    siteName: "أدواتي - Adwati",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "أدواتي - Adwati | أدوات ويب عربية مجانية وآمنة",
+    description:
+      "منصة الأدوات العربية المجانية — معالجة PDF، تحرير الصور، تحويل الصوتيات.",
+  },
+};
 
 export default function HomePage() {
   const popularTools = tools.filter((t) => popularToolIds.includes(t.id));

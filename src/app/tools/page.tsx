@@ -1,5 +1,28 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { tools, categories } from "@/lib/tools";
+
+export const metadata: Metadata = {
+  title: "جميع الأدوات | أدواتي - Adwati",
+  description:
+    "تصفح جميع أدوات أدواتي المجانية — أدوات PDF، أدوات الصور، أدوات الصوت. جميع المعالجات تتم في متصفحك بأمان كامل وبدون رفع للملفات.",
+  alternates: { canonical: "https://adwati.com/tools" },
+  openGraph: {
+    title: "جميع الأدوات | أدواتي - Adwati",
+    description:
+      "تصفح جميع أدوات أدواتي المجانية — أدوات PDF، أدوات الصور، أدوات الصوت.",
+    url: "https://adwati.com/tools",
+    locale: "ar_SA",
+    type: "website",
+    siteName: "أدواتي - Adwati",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "جميع الأدوات | أدواتي - Adwati",
+    description:
+      "تصفح جميع أدوات أدواتي المجانية — أدوات PDF، أدوات الصور، أدوات الصوت.",
+  },
+};
 
 export default function ToolsPage() {
   return (
