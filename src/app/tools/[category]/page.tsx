@@ -11,7 +11,7 @@ export async function generateMetadata({
 }: {
   params: { category: string };
 }): Promise<Metadata> {
-  const category = getCategoryById(params.category as "pdf" | "image" | "audio");
+  const category = getCategoryById(params.category as "pdf" | "image" | "audio" | "signature");
 
   if (!category) {
     return {
@@ -49,7 +49,7 @@ export default function CategoryPage({
 }: {
   params: { category: string };
 }) {
-  const category = getCategoryById(params.category as "pdf" | "image" | "audio");
+  const category = getCategoryById(params.category as "pdf" | "image" | "audio" | "signature");
 
   if (!category) {
     return null;

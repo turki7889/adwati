@@ -99,6 +99,14 @@ const toolComponents: Record<string, React.ComponentType> = {
     ssr: false,
     loading: () => <ToolLoading />,
   }),
+  "extract-signature": dynamic(() => import("@/components/tools/extract-signature"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "draw-signature": dynamic(() => import("@/components/tools/draw-signature"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
 };
 
 function ToolLoading() {

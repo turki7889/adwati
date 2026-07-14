@@ -1,4 +1,4 @@
-export type Category = "image" | "pdf" | "audio";
+export type Category = "image" | "pdf" | "audio" | "signature";
 
 export interface Tool {
   id: string;
@@ -49,6 +49,15 @@ export const categories: CategoryInfo[] = [
     descriptionAr: "تحويل صيغ الصوت فوراً في متصفحك",
     icon: "🎵",
     color: "bg-purple-50 text-purple-700 border-purple-200",
+  },
+  {
+    id: "signature",
+    name: "Signature Tools",
+    nameAr: "أدوات التواقيع",
+    description: "Extract and draw signatures — all in your browser",
+    descriptionAr: "تفريغ التوقيع من الصور ورسم التواقيع — كله في متصفحك",
+    icon: "🖊️",
+    color: "bg-amber-50 text-amber-700 border-amber-200",
   },
 ];
 
@@ -189,6 +198,30 @@ export const tools: Tool[] = [
     icon: "🔊",
     route: "/tools/audio/convert-audio",
     color: "hover:bg-purple-100",
+  },
+
+  // ===== أدوات التواقيع (2) =====
+  {
+    id: "extract-signature",
+    name: "Signature Extractor",
+    nameAr: "تفريغ التوقيع",
+    description: "Remove background from signature image → transparent PNG",
+    descriptionAr: "إزالة الخلفية من صورة التوقيع ← PNG شفاف",
+    category: "signature",
+    icon: "✂️",
+    route: "/tools/signature/extract-signature",
+    color: "hover:bg-amber-100",
+  },
+  {
+    id: "draw-signature",
+    name: "Signature Drawer",
+    nameAr: "رسم توقيع",
+    description: "Draw your signature with mouse or touch → download as PNG",
+    descriptionAr: "ارسم توقيعك بالفأرة أو اللمس ← تحميل PNG",
+    category: "signature",
+    icon: "✍️",
+    route: "/tools/signature/draw-signature",
+    color: "hover:bg-amber-100",
   },
 ];
 
