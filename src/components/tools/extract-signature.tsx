@@ -24,7 +24,7 @@ async function ensureModelLoaded(
   if (!modelLoadPromise) {
     modelLoadPromise = preload({
       model: "isnet_quint8",
-      publicPath: "https://static.img.ly/",
+      publicPath: "https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/",
       progress: (key, current, total) => {
         _onModelProgress?.(key, current, total);
       },
@@ -257,7 +257,7 @@ export default function ExtractSignature() {
         const result = await removeBackground(imageDataUrl, {
           model: "isnet_quint8",
           output: { format: "image/png" },
-          publicPath: "https://static.img.ly/",
+          publicPath: "https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/",
           progress: (key, current, total) => {
             setAiProgress({ current, total });
             if (key === "compute") {
