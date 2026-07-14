@@ -49,6 +49,10 @@ const toolComponents: Record<string, React.ComponentType> = {
     ssr: false,
     loading: () => <ToolLoading />,
   }),
+  "convert-audio": dynamic(() => import("@/components/tools/convert-audio"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
 };
 
 function ToolLoading() {
