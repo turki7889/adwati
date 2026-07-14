@@ -23,6 +23,8 @@ async function ensureModelLoaded(
   _onModelProgress = onProgress;
   if (!modelLoadPromise) {
     modelLoadPromise = preload({
+      model: "isnet_quint8",
+      publicPath: "https://static.img.ly/",
       progress: (key, current, total) => {
         _onModelProgress?.(key, current, total);
       },
@@ -229,7 +231,7 @@ export default function ExtractSignature() {
 
   // ─── AI processing ───
   const processAI = useCallback(
-    async (imageBlob: Blob) => {
+    async (imageDataUrl: string) => {
       setAiPhase("loading-model");
       setError(null);
       setAiProgress({ current: 0, total: 0 });
@@ -252,9 +254,10 @@ export default function ExtractSignature() {
         setAiProgress({ current: 0, total: 0 });
         setAiProgressMsg("النموذج جاهز — جاري معالجة الصورة...");
 
-        const result = await removeBackground(imageBlob, {
+        const result = await removeBackground(imageDataUrl, {
           model: "isnet_quint8",
           output: { format: "image/png" },
+          publicPath: "https://static.img.ly/",
           progress: (key, current, total) => {
             setAiProgress({ current, total });
             if (key === "compute") {
@@ -316,9 +319,14 @@ export default function ExtractSignature() {
         imgRef.current = img;
 
         if (mode === "ai") {
-          // Convert file to blob for AI processing
-          const blob = new Blob([await f.arrayBuffer()], { type: f.type });
-          await processAI(blob);
+          // Convert file to data URL for AI processing (Blob format can cause issues)
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(f);
+          });
+          await processAI(dataUrl);
         } else {
           processManual();
         }
@@ -337,8 +345,13 @@ export default function ExtractSignature() {
       setMode(newMode);
       if (imgRef.current && file) {
         if (newMode === "ai") {
-          const blob = new Blob([file], { type: file.type });
-          processAI(blob);
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          processAI(dataUrl);
         } else {
           processManual();
         }
