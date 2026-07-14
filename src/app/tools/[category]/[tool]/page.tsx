@@ -1,6 +1,48 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getToolById, getCategoryById } from "@/lib/tools";
+import dynamic from "next/dynamic";
+
+// Map tool IDs to their components
+const toolComponents: Record<string, React.ComponentType> = {
+  "convert-image": dynamic(() => import("@/components/tools/convert-image"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "compress-image": dynamic(() => import("@/components/tools/compress-image"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "resize-image": dynamic(() => import("@/components/tools/resize-image"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "crop-image": dynamic(() => import("@/components/tools/crop-image"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "filter-image": dynamic(() => import("@/components/tools/filter-image"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "favicon-generator": dynamic(() => import("@/components/tools/favicon-generator"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "absher-image": dynamic(() => import("@/components/tools/absher-image"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+};
+
+function ToolLoading() {
+  return (
+    <div className="rounded-2xl border border-border bg-bg-card p-12 text-center">
+      <div className="animate-spin inline-block w-8 h-8 border-3 border-primary border-t-transparent rounded-full mb-4" />
+      <p className="text-lg text-text-muted">جاري تحميل الأداة...</p>
+    </div>
+  );
+}
 
 export default function ToolPage({
   params,
@@ -14,6 +56,7 @@ export default function ToolPage({
   }
 
   const category = getCategoryById(tool.category);
+  const ToolComponent = toolComponents[params.tool];
 
   return (
     <div className="min-h-screen">
@@ -76,16 +119,20 @@ export default function ToolPage({
           </span>
         </div>
 
-        {/* Tool Workspace - Placeholder */}
-        <div className="rounded-2xl border-2 border-dashed border-border bg-bg-main p-12 text-center">
-          <div className="text-5xl mb-4 opacity-30">{tool.icon}</div>
-          <p className="text-lg text-text-muted mb-2">
-            أداة {tool.nameAr} قيد التطوير
-          </p>
-          <p className="text-sm text-text-muted">
-            سيتم تفعيل هذه الأداة قريباً — المعالجة ستتم بالكامل في متصفحك
-          </p>
-        </div>
+        {/* Tool Workspace - Real Component */}
+        {ToolComponent ? (
+          <ToolComponent />
+        ) : (
+          <div className="rounded-2xl border-2 border-dashed border-border bg-bg-main p-12 text-center">
+            <div className="text-5xl mb-4 opacity-30">{tool.icon}</div>
+            <p className="text-lg text-text-muted mb-2">
+              أداة {tool.nameAr} قيد التطوير
+            </p>
+            <p className="text-sm text-text-muted">
+              سيتم تفعيل هذه الأداة قريباً — المعالجة ستتم بالكامل في متصفحك
+            </p>
+          </div>
+        )}
 
         {/* Related Tools */}
         <div className="mt-16">
