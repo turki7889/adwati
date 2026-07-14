@@ -7,7 +7,7 @@ export default function CategoryPage({
 }: {
   params: { category: string };
 }) {
-  const category = getCategoryById(params.category as "pdf" | "image" | "text");
+  const category = getCategoryById(params.category as "pdf" | "image" | "audio");
 
   if (!category) {
     notFound();

@@ -53,7 +53,7 @@ export default function ToolsPage() {
                     ? "PDF"
                     : tool.category === "image"
                       ? "صور"
-                      : "نصوص"}
+                      : "صوت"}
                 </span>
               </div>
             </Link>
