@@ -3,43 +3,12 @@ const nextConfig = {
   // Enable static export for deploy flexibility
   output: process.env.NEXT_EXPORT === "true" ? "export" : undefined,
 
-  // Allow @ffmpeg/ffmpeg WASM assets
-  webpack(config, { isServer }) {
+  // Allow WASM assets
+  webpack(config) {
     config.experiments = {
       ...config.experiments,
       asyncWebAssembly: true,
     };
-
-    // Ignore Node.js-specific modules from @huggingface/transformers
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        path: false,
-        "onnxruntime-node": false,
-      };
-    }
-
-    // Fix: Treat .mjs files from node_modules as javascript/auto
-    // so Terser doesn't choke on ESM syntax
-    config.module.rules.push({
-      test: /\.mjs$/,
-      include: /node_modules/,
-      type: "javascript/auto",
-    });
-
-    // Handle .wasm files
-    config.module.rules.push({
-      test: /\.wasm$/,
-      type: "asset/resource",
-    });
-
-    // Ignore Node.js .node binary modules
-    config.module.rules.push({
-      test: /\.node$/,
-      loader: "ignore-loader",
-    });
-
     return config;
   },
 

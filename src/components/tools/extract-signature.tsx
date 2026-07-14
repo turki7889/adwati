@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import UploadArea from "./shared/upload-area";
 import { loadImage, downloadBlob, formatFileSize } from "@/lib/image-utils";
-import { pipeline, RawImage } from "@xenova/transformers";
 
 type Mode = "ai" | "manual";
 type BgMode = "light" | "dark";
@@ -16,16 +15,19 @@ async function ensureModelLoaded(
 ): Promise<any> {
   if (!segmenterPromise) {
     onProgress("جاري تحميل نموذج الذكاء الاصطناعي (~45MB، مرة واحدة فقط)...");
-    segmenterPromise = pipeline("background-removal", "briaai/RMBG-1.4", {
-      progress_callback: (info: any) => {
-        if (info?.status === "progress") {
-          const pct = info?.progress ? Math.round(info.progress) : 0;
-          onProgress(`جاري تحميل النموذج... ${pct}%`);
-        } else if (info?.status === "done") {
-          onProgress("اكتمل تحميل النموذج — جاري التجهيز...");
-        }
-      },
-    }).catch((e: any) => {
+    segmenterPromise = (async () => {
+      const { pipeline } = await import("@xenova/transformers");
+      return pipeline("background-removal", "briaai/RMBG-1.4", {
+        progress_callback: (info: any) => {
+          if (info?.status === "progress") {
+            const pct = info?.progress ? Math.round(info.progress) : 0;
+            onProgress(`جاري تحميل النموذج... ${pct}%`);
+          } else if (info?.status === "done") {
+            onProgress("اكتمل تحميل النموذج — جاري التجهيز...");
+          }
+        },
+      });
+    })().catch((e: any) => {
       segmenterPromise = null;
       throw e;
     });
@@ -179,6 +181,7 @@ export default function ExtractSignature() {
       setAiStatus("processing");
       setAiMessage("جاري معالجة الصورة...");
       
+      const { RawImage } = await import("@xenova/transformers");
       const rawImage = await RawImage.fromURL(imageDataUrl);
       const output: RawImage = await segmenter(rawImage);
 
