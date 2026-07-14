@@ -9,6 +9,7 @@ type BgMode = "light" | "dark";
 export default function ExtractSignature() {
   const [file, setFile] = useState<File | null>(null);
   const [threshold, setThreshold] = useState(200);
+  const [feather, setFeather] = useState(20);
   const [bgMode, setBgMode] = useState<BgMode>("light");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,31 +34,70 @@ export default function ExtractSignature() {
     }
   }, []);
 
-  // معالجة البكسلات: إزالة الخلفية بناءً على الوضع (فاتح/داكن)
+  // معالجة البكسلات: إزالة الخلفية مع تدرج alpha لتنعيم الحواف
   const applyTransparency = useCallback(
     (data: Uint8ClampedArray) => {
+      const f = feather; // مدى التدرج: 0 = ثنائي، 50 = ناعم جداً
+
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
         const g = data[i + 1];
         const b = data[i + 2];
         const brightness = (r + g + b) / 3;
 
-        const shouldMakeTransparent =
-          bgMode === "light"
-            ? brightness > threshold   // إزالة البكسلات الفاتحة
-            : brightness < threshold;  // إزالة البكسلات الداكنة
+        if (f === 0) {
+          // سلوك ثنائي (feather = 0) — كما كان سابقاً
+          const shouldMakeTransparent =
+            bgMode === "light"
+              ? brightness > threshold
+              : brightness < threshold;
 
-        if (shouldMakeTransparent) {
+          if (shouldMakeTransparent) {
+            data[i] = 0;
+            data[i + 1] = 0;
+            data[i + 2] = 0;
+            data[i + 3] = 0;
+          }
+        } else {
+          // تدرج alpha للتنعيم
+          let alpha: number;
+
+          if (bgMode === "light") {
+            // وضع فاتح: نبقي الداكن (التوقيع)، نزيل الفاتح (الخلفية)
+            if (brightness <= threshold - f) {
+              alpha = 255; // بكسل توقيع أكيد — معتم بالكامل
+            } else if (brightness >= threshold + f) {
+              alpha = 0;   // بكسل خلفية أكيد — شفاف بالكامل
+            } else {
+              // منطقة التدرج: alpha ينتقل من 255 إلى 0
+              alpha = Math.round(
+                255 * (1 - (brightness - (threshold - f)) / (2 * f))
+              );
+            }
+          } else {
+            // وضع داكن: نبقي الفاتح (التوقيع)، نزيل الداكن (الخلفية)
+            if (brightness >= threshold + f) {
+              alpha = 255; // بكسل توقيع أكيد — معتم بالكامل
+            } else if (brightness <= threshold - f) {
+              alpha = 0;   // بكسل خلفية أكيد — شفاف بالكامل
+            } else {
+              // منطقة التدرج: alpha ينتقل من 0 إلى 255
+              alpha = Math.round(
+                255 * ((brightness - (threshold - f)) / (2 * f))
+              );
+            }
+          }
+
           // تصفير RGB مع alpha لمنع مشكلة premultiplied alpha
           // اللي تسبب خلفية سوداء في PNG الناتج
           data[i] = 0;
           data[i + 1] = 0;
           data[i + 2] = 0;
-          data[i + 3] = 0;
+          data[i + 3] = alpha;
         }
       }
     },
-    [threshold, bgMode]
+    [threshold, feather, bgMode]
   );
 
   // معالجة الصورة
@@ -130,7 +170,7 @@ export default function ExtractSignature() {
       const timer = setTimeout(processImage, 100);
       return () => clearTimeout(timer);
     }
-  }, [threshold, bgMode, processImage]);
+  }, [threshold, feather, bgMode, processImage]);
 
   const handleFile = useCallback(async (f: File) => {
     setError(null);
@@ -241,6 +281,30 @@ export default function ExtractSignature() {
           <span>
             {bgMode === "light" ? "إزالة أقل (250)" : "إزالة أقل (50)"}
           </span>
+        </div>
+
+        {/* Slider تنعيم الحواف */}
+        <div className="flex items-center justify-between mb-3 mt-5">
+          <label className="text-sm font-medium text-text-secondary">
+            تنعيم الحواف
+          </label>
+          <span className="text-sm font-bold text-primary tabular-nums">
+            {feather}
+          </span>
+        </div>
+
+        <input
+          type="range"
+          min={0}
+          max={50}
+          value={feather}
+          onChange={(e) => setFeather(Number(e.target.value))}
+          className="w-full h-2 bg-bg-surface rounded-lg appearance-none cursor-pointer accent-primary"
+        />
+
+        <div className="flex justify-between mt-2 text-xs text-text-muted">
+          <span>ثنائي (0)</span>
+          <span>ناعم جداً (50)</span>
         </div>
 
         <div className="flex items-center gap-3 mt-5">
