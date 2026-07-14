@@ -33,6 +33,22 @@ const toolComponents: Record<string, React.ComponentType> = {
     ssr: false,
     loading: () => <ToolLoading />,
   }),
+  "merge-pdf": dynamic(() => import("@/components/tools/merge-pdf"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "split-pdf": dynamic(() => import("@/components/tools/split-pdf"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "images-to-pdf": dynamic(() => import("@/components/tools/images-to-pdf"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
+  "protect-pdf": dynamic(() => import("@/components/tools/protect-pdf"), {
+    ssr: false,
+    loading: () => <ToolLoading />,
+  }),
 };
 
 function ToolLoading() {
