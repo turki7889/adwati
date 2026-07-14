@@ -1,90 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument } from "pdf-lib-with-encrypt";
 import UploadArea from "./shared/upload-area";
 import { downloadBlob, formatFileSize } from "@/lib/image-utils";
 
 type Mode = "encrypt" | "decrypt";
-
-// Custom AES-GCM encrypted format: 4-byte magic + 16-byte salt + 12-byte IV + encrypted data
-const MAGIC_BYTES = new TextEncoder().encode("ADWT") as unknown as Uint8Array;
-const ALGORITHM = "AES-GCM";
-
-// Helper to get random bytes with correct TS5 types
-function randomBytes(length: number): Uint8Array {
-  return crypto.getRandomValues(new Uint8Array(length)) as unknown as Uint8Array;
-}
-
-async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(password) as unknown as BufferSource,
-    "PBKDF2",
-    false,
-    ["deriveKey"]
-  );
-  return crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt: salt as unknown as BufferSource,
-      iterations: 100000,
-      hash: "SHA-256",
-    },
-    keyMaterial,
-    { name: ALGORITHM, length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
-}
-
-async function aesEncrypt(data: Uint8Array, password: string): Promise<Uint8Array> {
-  const salt = randomBytes(16);
-  const key = await deriveKey(password, salt);
-  const iv = randomBytes(12);
-
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: ALGORITHM, iv: iv as unknown as BufferSource },
-    key,
-    data as unknown as BufferSource
-  );
-
-  // Format: MAGIC(4) + salt(16) + iv(12) + ciphertext
-  const ct = new Uint8Array(ciphertext);
-  const result = new Uint8Array(4 + 16 + 12 + ct.length);
-  result.set(MAGIC_BYTES, 0);
-  result.set(salt, 4);
-  result.set(iv, 20);
-  result.set(ct, 32);
-  return result;
-}
-
-async function aesDecrypt(data: Uint8Array, password: string): Promise<Uint8Array> {
-  if (data.length < 32) throw new Error("ملف غير صالح");
-
-  const magic = data.slice(0, 4);
-  if (new TextDecoder().decode(magic) !== "ADWT") {
-    throw new Error("ليس ملف Adwati مشفر");
-  }
-
-  const salt = data.slice(4, 20);
-  const iv = data.slice(20, 32);
-  const ciphertext = data.slice(32);
-
-  const key = await deriveKey(password, salt);
-
-  try {
-    const plaintext = await crypto.subtle.decrypt(
-      { name: ALGORITHM, iv: iv as unknown as BufferSource },
-      key,
-      ciphertext as unknown as BufferSource
-    );
-    return new Uint8Array(plaintext);
-  } catch {
-    throw new Error("كلمة المرور غير صحيحة");
-  }
-}
 
 export default function ProtectPDF() {
   const [file, setFile] = useState<File | null>(null);
@@ -118,25 +39,32 @@ export default function ProtectPDF() {
       const buf = new Uint8Array(await file.arrayBuffer());
 
       if (mode === "encrypt") {
-        // Verify it's a valid PDF
+        // التحقق من أنه PDF صالح
+        let pdfDoc: import("pdf-lib-with-encrypt").PDFDocument;
         try {
-          await PDFDocument.load(buf, { ignoreEncryption: true });
+          pdfDoc = await PDFDocument.load(buf, { ignoreEncryption: true });
         } catch {
           setError("تعذر قراءة ملف PDF. تأكد من أنه ملف PDF صالح.");
           setProcessing(false);
           return;
         }
 
-        // Encrypt with AES-GCM
-        const encrypted = await aesEncrypt(buf, password);
-        setResultBlob(new Blob([encrypted] as BlobPart[], { type: "application/octet-stream" }));
+        // تشفير PDF قياسي بكلمة مرور
+        pdfDoc.encrypt({
+          ownerPassword: password,
+          userPassword: password,
+        });
+
+        const encryptedBytes = await pdfDoc.save();
+        setResultBlob(
+          new Blob([encryptedBytes] as BlobPart[], { type: "application/pdf" })
+        );
         setResultName("locked.pdf");
       } else {
-        // Decrypt with AES-GCM
-        let decrypted: Uint8Array;
-
+        // فك تشفير PDF — المحاولة بكلمة المرور
+        let pdfDoc: import("pdf-lib-with-encrypt").PDFDocument;
         try {
-          decrypted = await aesDecrypt(buf, password);
+          pdfDoc = await PDFDocument.load(buf, { password });
         } catch {
           setError(
             "كلمة المرور غير صحيحة أو الملف غير مشفر. تأكد من كلمة المرور"
@@ -145,16 +73,11 @@ export default function ProtectPDF() {
           return;
         }
 
-        // Verify result is valid PDF
-        try {
-          await PDFDocument.load(decrypted, { ignoreEncryption: true });
-        } catch {
-          setError("كلمة المرور غير صحيحة أو الملف غير مشفر. تأكد من كلمة المرور");
-          setProcessing(false);
-          return;
-        }
-
-        setResultBlob(new Blob([decrypted] as BlobPart[], { type: "application/pdf" }));
+        // حفظ بدون تشفير — التحميل بكلمة المرور يفك التشفير، والحفظ بدون .encrypt() ينتج PDF غير مشفر
+        const decryptedBytes = await pdfDoc.save();
+        setResultBlob(
+          new Blob([decryptedBytes] as BlobPart[], { type: "application/pdf" })
+        );
         setResultName("unlocked.pdf");
       }
     } catch (e) {
@@ -238,7 +161,7 @@ export default function ProtectPDF() {
               <span className="text-3xl mb-2 block">🔒</span>
               <p className="text-sm font-bold text-text-main">تشفير</p>
               <p className="text-xs text-text-muted mt-1">
-                حماية الملف بكلمة مرور (AES-256)
+                حماية الملف بكلمة مرور قياسية
               </p>
             </div>
           </label>
@@ -302,11 +225,6 @@ export default function ProtectPDF() {
         <p className="mt-3 text-xs text-text-muted flex items-center gap-1">
           <span>🛡️</span>
           كلمة المرور لا تُخزّن ولا تُرسل — المعالجة تتم في متصفحك فقط
-          {mode === "encrypt" && (
-            <span className="mr-1">
-              | التشفير باستخدام AES-256-GCM مع PBKDF2
-            </span>
-          )}
         </p>
 
         <div className="flex items-center gap-3 mt-5">
