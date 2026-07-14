@@ -56,6 +56,7 @@ export const FORMAT_OPTIONS = [
   { value: "image/webp", label: "WebP" },
   { value: "image/gif", label: "GIF" },
   { value: "image/bmp", label: "BMP" },
+  { value: "image/avif", label: "AVIF (حسب دعم المتصفح)" },
 ];
 
 /** `تحويل Canvas إلى Blob` */
