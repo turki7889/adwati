@@ -4,9 +4,12 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import UploadArea from "./shared/upload-area";
 import { loadImage, downloadBlob, formatFileSize } from "@/lib/image-utils";
 
+type BgMode = "light" | "dark";
+
 export default function ExtractSignature() {
   const [file, setFile] = useState<File | null>(null);
   const [threshold, setThreshold] = useState(200);
+  const [bgMode, setBgMode] = useState<BgMode>("light");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -30,7 +33,34 @@ export default function ExtractSignature() {
     }
   }, []);
 
-  // معالجة البكسلات: تحويل الأبيض/الفاتح إلى شفاف
+  // معالجة البكسلات: إزالة الخلفية بناءً على الوضع (فاتح/داكن)
+  const applyTransparency = useCallback(
+    (data: Uint8ClampedArray) => {
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const brightness = (r + g + b) / 3;
+
+        const shouldMakeTransparent =
+          bgMode === "light"
+            ? brightness > threshold   // إزالة البكسلات الفاتحة
+            : brightness < threshold;  // إزالة البكسلات الداكنة
+
+        if (shouldMakeTransparent) {
+          // تصفير RGB مع alpha لمنع مشكلة premultiplied alpha
+          // اللي تسبب خلفية سوداء في PNG الناتج
+          data[i] = 0;
+          data[i + 1] = 0;
+          data[i + 2] = 0;
+          data[i + 3] = 0;
+        }
+      }
+    },
+    [threshold, bgMode]
+  );
+
+  // معالجة الصورة
   const processImage = useCallback(() => {
     const img = imgRef.current;
     const srcCanvas = sourceCanvasRef.current;
@@ -61,17 +91,8 @@ export default function ExtractSignature() {
       const imageData = srcCtx.getImageData(0, 0, w, h);
       const data = imageData.data;
 
-      // لكل بكسل: إذا كان السطوع > threshold، اجعل alpha = 0
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        // حساب السطوع (متوسط RGB)
-        const brightness = (r + g + b) / 3;
-        if (brightness > threshold) {
-          data[i + 3] = 0; // شفاف
-        }
-      }
+      // تطبيق الشفافية
+      applyTransparency(data);
 
       // رسم النتيجة على preview canvas
       previewCanvas.width = w;
@@ -101,15 +122,15 @@ export default function ExtractSignature() {
     } finally {
       setProcessing(false);
     }
-  }, [threshold, resultUrl, drawCheckerboard]);
+  }, [resultUrl, drawCheckerboard, applyTransparency]);
 
-  // إعادة المعالجة عند تغيير threshold
+  // إعادة المعالجة عند تغيير threshold أو bgMode
   useEffect(() => {
     if (imgRef.current) {
       const timer = setTimeout(processImage, 100);
       return () => clearTimeout(timer);
     }
-  }, [threshold, processImage]);
+  }, [threshold, bgMode, processImage]);
 
   const handleFile = useCallback(async (f: File) => {
     setError(null);
@@ -126,11 +147,6 @@ export default function ExtractSignature() {
 
   const handleDownload = useCallback(() => {
     if (!resultUrl || !file) return;
-    // Convert data URL to blob for download
-    const previewCanvas = previewCanvasRef.current;
-    if (!previewCanvas) return;
-
-    // Recreate clean transparent PNG (without checkerboard)
     const srcCanvas = sourceCanvasRef.current;
     if (!srcCanvas) return;
 
@@ -139,12 +155,9 @@ export default function ExtractSignature() {
 
     const imageData = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
     const data = imageData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-      if (brightness > threshold) {
-        data[i + 3] = 0;
-      }
-    }
+
+    // إعادة تطبيق الشفافية بنفس المنطق
+    applyTransparency(data);
 
     const cleanCanvas = document.createElement("canvas");
     cleanCanvas.width = srcCanvas.width;
@@ -158,7 +171,7 @@ export default function ExtractSignature() {
         downloadBlob(blob, `${name}-transparent.png`);
       }
     }, "image/png");
-  }, [resultUrl, file, threshold]);
+  }, [resultUrl, file, applyTransparency]);
 
   if (!file) {
     return (
@@ -174,6 +187,35 @@ export default function ExtractSignature() {
     <div className="space-y-6">
       {/* شريط التحكم */}
       <div className="rounded-xl border border-border bg-bg-card p-6">
+        {/* Toggle: إزالة الخلفية الفاتحة / الداكنة */}
+        <div className="flex items-center justify-between mb-5">
+          <span className="text-sm font-medium text-text-secondary">
+            نوع الخلفية المراد إزالتها
+          </span>
+          <div className="flex rounded-lg border border-border overflow-hidden">
+            <button
+              onClick={() => setBgMode("light")}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                bgMode === "light"
+                  ? "bg-primary text-white"
+                  : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
+              }`}
+            >
+              فاتحة
+            </button>
+            <button
+              onClick={() => setBgMode("dark")}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                bgMode === "dark"
+                  ? "bg-primary text-white"
+                  : "bg-bg-surface text-text-secondary hover:bg-bg-hover"
+              }`}
+            >
+              داكنة
+            </button>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between mb-3">
           <label className="text-sm font-medium text-text-secondary">
             حساسية إزالة الخلفية
@@ -193,8 +235,12 @@ export default function ExtractSignature() {
         />
 
         <div className="flex justify-between mt-2 text-xs text-text-muted">
-          <span>إزالة أكثر (50)</span>
-          <span>إزالة أقل (250)</span>
+          <span>
+            {bgMode === "light" ? "إزالة أكثر (50)" : "إزالة أكثر (250)"}
+          </span>
+          <span>
+            {bgMode === "light" ? "إزالة أقل (250)" : "إزالة أقل (50)"}
+          </span>
         </div>
 
         <div className="flex items-center gap-3 mt-5">
