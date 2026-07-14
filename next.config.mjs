@@ -9,6 +9,15 @@ const nextConfig = {
       ...config.experiments,
       asyncWebAssembly: true,
     };
+
+    // Fix: Treat .mjs files from node_modules as javascript/auto
+    // so Terser doesn't choke on ESM syntax (onnxruntime-web, @imgly)
+    config.module.rules.push({
+      test: /\.mjs$/,
+      include: /node_modules/,
+      type: "javascript/auto",
+    });
+
     return config;
   },
 
