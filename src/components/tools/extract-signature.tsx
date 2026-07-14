@@ -345,13 +345,15 @@ export default function ExtractSignature() {
       setMode(newMode);
       if (imgRef.current && file) {
         if (newMode === "ai") {
-          const reader = new FileReader();
-          const dataUrl = await new Promise<string>((resolve, reject) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-          processAI(dataUrl);
+          (async () => {
+            const reader = new FileReader();
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+            processAI(dataUrl);
+          })();
         } else {
           processManual();
         }
