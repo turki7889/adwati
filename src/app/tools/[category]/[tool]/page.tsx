@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getToolById } from "@/lib/tools";
+import { getToolById, getCategoryById } from "@/lib/tools";
 
 export default function ToolPage({
   params,
@@ -12,6 +12,8 @@ export default function ToolPage({
   if (!tool) {
     notFound();
   }
+
+  const category = getCategoryById(tool.category);
 
   return (
     <div className="min-h-screen">
@@ -52,11 +54,7 @@ export default function ToolPage({
             href={`/tools/${tool.category}`}
             className="hover:text-primary transition-colors"
           >
-            {tool.category === "pdf"
-              ? "أدوات PDF"
-              : tool.category === "image"
-                ? "أدوات الصور"
-                : "أدوات النصوص"}
+            {category?.nameAr}
           </Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">{tool.nameAr}</span>
@@ -93,12 +91,7 @@ export default function ToolPage({
               href={`/tools/${tool.category}`}
               className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
             >
-              جميع أدوات{" "}
-              {tool.category === "pdf"
-                ? "PDF"
-                : tool.category === "image"
-                  ? "الصور"
-                  : "النصوص"}
+                جميع أدوات {category?.nameAr}
             </Link>
           </div>
         </div>
