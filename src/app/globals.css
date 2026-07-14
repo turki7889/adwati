@@ -1,17 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #1a73e8;
-  --color-primary-dark: #1557b0;
-  --color-accent: #f59e0b;
-  --color-accent-dark: #d97706;
-  --color-success: #10b981;
-  --color-danger: #ef4444;
-  --color-bg-main: #f8fafc;
+  /* ===== Primary: واحة تقنية ===== */
+  --color-primary: #0e7b70;
+  --color-primary-light: #14a392;
+  --color-primary-dark: #0a5c54;
+  --color-primary-bg: #ecfaf7;
+
+  /* ===== Accent: دفء الصحراء ===== */
+  --color-accent: #c2713d;
+  --color-accent-light: #d99062;
+  --color-accent-dark: #9e582a;
+
+  /* ===== Semantic ===== */
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+
+  /* ===== Neutrals ===== */
+  --color-bg-main: #f8f9fb;
   --color-bg-card: #ffffff;
-  --color-text-main: #1e293b;
-  --color-text-muted: #64748b;
-  --color-border: #e2e8f0;
+  --color-bg-surface: #f1f3f5;
+  --color-text-main: #181c25;
+  --color-text-secondary: #515a6b;
+  --color-text-muted: #949eae;
+  --color-border: #dfe3e9;
+  --color-border-light: #eef0f4;
+
+  /* ===== Shadows ===== */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 4px 16px -4px rgb(14 123 112 / 0.12), 0 2px 6px -2px rgb(0 0 0 / 0.06);
+  --shadow-toolbar: 0 -1px 3px 0 rgb(0 0 0 / 0.04);
 }
 
 body {
@@ -30,16 +50,13 @@ body {
 ::-webkit-scrollbar {
   width: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: var(--color-bg-main);
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--color-text-muted);
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-main);
+  background: var(--color-text-secondary);
 }

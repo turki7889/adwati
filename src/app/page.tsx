@@ -4,24 +4,33 @@ import { categories, tools, popularToolIds } from "@/lib/tools";
 export default function HomePage() {
   const popularTools = tools.filter((t) => popularToolIds.includes(t.id));
   const privacyFeatures = [
-    { icon: "🔒", text: "جميع المعالجات في متصفحك", sub: "ملفاتك لا تغادر جهازك أبداً" },
+    { icon: "🔒", text: "معالجة محلية بالكامل", sub: "ملفاتك لا تغادر جهازك أبداً" },
     { icon: "⚡", text: "سرعة فائقة", sub: "معالجة فورية بدون انتظار رفع" },
-    { icon: "🆓", text: "مجاني بالكامل", sub: "بدون تسجيل وبدون حدود" },
+    { icon: "🆓", text: "مجاني للأبد", sub: "بدون تسجيل وبدون حدود" },
   ];
 
   return (
     <div className="min-h-screen">
+      {/* Trust Bar */}
+      <div className="bg-primary-dark text-white/90 border-b border-primary">
+        <div className="mx-auto max-w-7xl px-4 py-2 flex items-center justify-center gap-6 sm:gap-10 text-xs sm:text-sm">
+          <span>🔒 معالجة محلية بالكامل</span>
+          <span>🚫 لا رفع للملفات</span>
+          <span>🆓 مجاني للأبد</span>
+        </div>
+      </div>
+
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <header className="border-b border-border bg-bg-card">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-3xl font-bold text-primary">
               أدواتي
-              <span className="mr-2 text-lg font-normal text-gray-400">
+              <span className="mr-2 text-lg font-normal text-text-muted">
                 Adwati
               </span>
             </Link>
-            <nav className="flex gap-6 text-sm font-medium text-gray-600">
+            <nav className="flex gap-6 text-sm font-medium text-text-secondary">
               <Link href="/" className="hover:text-primary transition-colors">
                 الرئيسية
               </Link>
@@ -37,13 +46,13 @@ export default function HomePage() {
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-bl from-primary/5 to-accent/5 py-20">
+      <section className="bg-gradient-to-br from-primary to-primary-dark text-white py-20 sm:py-24">
         <div className="mx-auto max-w-4xl px-4 text-center">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
+          <h1 className="text-4xl font-extrabold sm:text-5xl">
             أدوات ويب عربية
-            <span className="block text-primary">سريعة وآمنة ومجانية</span>
+            <span className="block text-accent-light">سريعة وآمنة ومجانية</span>
           </h1>
-          <p className="mt-6 text-lg text-gray-600 leading-relaxed">
+          <p className="mt-6 text-lg text-white/80 leading-relaxed">
             جميع المعالجات تتم في متصفحك مباشرة. لا يتم رفع ملفاتك إلى أي
             خادم.
             <br />
@@ -52,13 +61,13 @@ export default function HomePage() {
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link
               href="/tools"
-              className="inline-block rounded-xl bg-primary px-8 py-3 text-lg font-semibold text-white shadow-lg hover:bg-primary-dark transition-all"
+              className="inline-block rounded-xl bg-accent hover:bg-accent-dark px-8 py-3 text-lg font-semibold text-white shadow-lg transition-all"
             >
               استكشف جميع الأدوات
             </Link>
             <Link
               href="/tools/image/absher-image"
-              className="inline-block rounded-xl border-2 border-primary bg-white px-8 py-3 text-lg font-semibold text-primary hover:bg-primary/5 transition-all"
+              className="inline-block rounded-xl border-2 border-white/30 bg-white/10 hover:bg-white/20 px-8 py-3 text-lg font-semibold text-white backdrop-blur-sm transition-all"
             >
               🛂 تصغير صورة أبشر
             </Link>
@@ -67,17 +76,17 @@ export default function HomePage() {
       </section>
 
       {/* Privacy Promise */}
-      <section className="py-12 bg-white">
+      <section className="py-12 bg-bg-card">
         <div className="mx-auto max-w-5xl px-4">
           <div className="grid gap-6 sm:grid-cols-3">
             {privacyFeatures.map((feat, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center"
+                className="rounded-2xl border border-border bg-bg-main p-6 text-center"
               >
                 <div className="text-3xl mb-3">{feat.icon}</div>
-                <h3 className="font-bold text-gray-900">{feat.text}</h3>
-                <p className="text-sm text-gray-500 mt-1">{feat.sub}</p>
+                <h3 className="font-bold text-text-main">{feat.text}</h3>
+                <p className="text-sm text-text-secondary mt-1">{feat.sub}</p>
               </div>
             ))}
           </div>
@@ -85,28 +94,33 @@ export default function HomePage() {
       </section>
 
       {/* Categories */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-bg-main">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+          <h2 className="text-2xl font-bold text-text-main mb-2 text-center">
             تصفح الأدوات حسب الفئة
           </h2>
+          <p className="text-text-secondary text-center mb-8">
+            اختر الفئة التي تحتاجها وابدأ فوراً
+          </p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/tools/${cat.id}`}
-                className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
+                className="group rounded-2xl border border-border bg-bg-card p-6 shadow-card hover:shadow-card-hover hover:border-primary/30 transition-all"
               >
-                <div className="text-4xl mb-3">{cat.icon}</div>
-                <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
+                <div className="w-12 h-12 bg-primary-bg text-primary rounded-xl flex items-center justify-center text-2xl mb-4">
+                  {cat.icon}
+                </div>
+                <h3 className="text-xl font-bold text-text-main group-hover:text-primary transition-colors">
                   {cat.nameAr}
                 </h3>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-text-secondary">
                   {cat.descriptionAr}
                 </p>
-                <p className="mt-3 text-xs text-gray-400">
+                <span className="mt-3 inline-block text-xs bg-primary-bg text-primary px-3 py-1 rounded-full font-medium">
                   {tools.filter((t) => t.category === cat.id).length} أدوات
-                </p>
+                </span>
               </Link>
             ))}
           </div>
@@ -114,34 +128,45 @@ export default function HomePage() {
       </section>
 
       {/* Popular Tools */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-bg-card">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+          <h2 className="text-2xl font-bold text-text-main mb-2 text-center">
             الأدوات الأكثر استخداماً
           </h2>
+          <p className="text-text-secondary text-center mb-8">
+            أدوات يبحث عنها آلاف المستخدمين يومياً
+          </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {popularTools.map((tool) => (
               <Link
                 key={tool.id}
                 href={tool.route}
-                className="flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 hover:bg-gray-100 hover:border-primary/30 transition-all"
+                className="flex items-center gap-4 rounded-xl border border-border bg-bg-main p-4 shadow-card hover:shadow-card-hover hover:border-primary/30 transition-all"
               >
                 <span className="text-2xl">{tool.icon}</span>
                 <div>
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-text-main">
                     {tool.nameAr}
                   </h3>
-                  <p className="text-sm text-gray-500">{tool.descriptionAr}</p>
+                  <p className="text-sm text-text-secondary">{tool.descriptionAr}</p>
                 </div>
               </Link>
             ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link
+              href="/tools"
+              className="inline-flex items-center gap-2 text-primary hover:text-primary-dark font-medium transition-colors"
+            >
+              جميع الأدوات ←
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white py-8">
-        <div className="mx-auto max-w-7xl px-4 text-center text-sm text-gray-500">
+      <footer className="border-t border-border bg-bg-surface py-8">
+        <div className="mx-auto max-w-7xl px-4 text-center text-sm text-text-muted">
           <p>
             © {new Date().getFullYear()} أدواتي Adwati — جميع الحقوق محفوظة
           </p>
